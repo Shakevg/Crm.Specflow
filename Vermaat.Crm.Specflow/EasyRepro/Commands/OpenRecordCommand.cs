@@ -28,6 +28,7 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Commands
 
             HelperMethods.WaitForFormLoad(browserInteraction.Driver);
             CheckForWavePopup(browserInteraction.Driver);
+            CloseCopilot(browserInteraction.Driver);
 
             if (browserInteraction.Driver.HasElement(browserInteraction.Selectors.GetXPathSeleniumSelector(SeleniumSelectorItems.Entity_ScriptErrorDialog)))
                 throw new TestExecutionException(Constants.ErrorCodes.FORMLOAD_SCRIPT_ERROR_ON_FORM);
@@ -53,9 +54,18 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Commands
 
         private void CheckForWavePopup(IWebDriver driver)
         {
-            if (driver.TryFindElement(SeleniumFunctions.Selectors.GetXPathSeleniumSelector(SeleniumSelectorItems.Popup_TeachingBubble_CloseButton), out var closeButton))
+            if (driver.TryFindElement(SeleniumFunctions.Selectors.GetXPathSeleniumSelector(SeleniumSelectorItems.Popup_TeachingBubble_CloseButton), out var closeButton) && closeButton.Displayed)
             {
                 closeButton.Click();
+            }
+        }
+
+        private void CloseCopilot(IWebDriver driver)
+        {
+            if (driver.TryFindElement(SeleniumFunctions.Selectors.GetXPathSeleniumSelector(SeleniumSelectorItems.Copilot_Button), out var copilotButton)
+                && bool.TryParse(copilotButton.GetAttribute("aria-expanded"), out var expanded) && expanded)
+            {
+                copilotButton.Click();
             }
         }
 
