@@ -12,10 +12,10 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Fields
             _formFields = new Dictionary<string, Dictionary<string, List<FormField>>>();
         }
 
-        public void Add(FormField field, string tab, string section)
+        public void Add(FormField field, FormCellTabAndSectionContext formCellTabAndSectionContext)
         {
-            var tabNotNull = tab ?? string.Empty;
-            var sectionNotNull = section ?? string.Empty;
+            var tabNotNull = formCellTabAndSectionContext.TabName ?? string.Empty;
+            var sectionNotNull = formCellTabAndSectionContext.SectionName ?? string.Empty;
 
             if (!_formFields.TryGetValue(tabNotNull, out var sectionDic))
             {
@@ -29,7 +29,23 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Fields
                 sectionDic.Add(sectionNotNull, fieldList);
             }
 
+            tabNotNull = formCellTabAndSectionContext.TabLabel ?? string.Empty;
+            sectionNotNull = formCellTabAndSectionContext.SectionLabel ?? string.Empty;
+
+            if (!_formFields.TryGetValue(tabNotNull, out var sectionDicNew))
+            {
+                sectionDicNew = new Dictionary<string, List<FormField>>();
+                _formFields.Add(tabNotNull, sectionDicNew);
+            }
+
+            if (!sectionDic.TryGetValue(sectionNotNull, out var fieldListNew))
+            {
+                fieldListNew = new List<FormField>();
+                sectionDicNew.Add(sectionNotNull, fieldListNew);
+            }
+
             fieldList.Add(field);
+            fieldListNew.Add(field);
         }
 
         public FormField Get()
