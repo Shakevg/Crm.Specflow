@@ -6,18 +6,12 @@ namespace Vermaat.Crm.Specflow.EasyRepro
 {
     internal class FormCellParsingContext
     {
-
-
         public Dictionary<string, AttributeMetadata> MetadataDic { get; set; }
         public UCIApp App { get; set; }
         public FormCell Cell { get; set; }
         public bool IsHeader { get; set; }
         public SystemFormType FormType { get; set; }
 
-        public string SectionName { get; set; }
-        public string SectionLabel { get; set; }
-        public string TabName { get; set; }
-        public string TabLabel { get; set; }
-
+        public FormCellTabAndSectionContext FormCellTabAndSectionContext { get; set; } = new FormCellTabAndSectionContext();
     }
 }
