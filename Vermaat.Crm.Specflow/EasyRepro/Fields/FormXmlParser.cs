@@ -54,14 +54,14 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Fields
 
             foreach (var tab in definition.Tabs)
             {
-                context.TabName = tab.Name ?? tab.Id;
-                context.TabLabel = tab.Labels.GetLabelInLanguage(app.UILanguageCode, GlobalTestingContext.LanguageCode);
+                context.FormCellTabAndSectionContext.TabName = tab.Name ?? tab.Id;
+                context.FormCellTabAndSectionContext.TabLabel = tab.Labels.GetLabelInLanguage(app.UILanguageCode, GlobalTestingContext.LanguageCode);
                 foreach (var column in tab.Columns)
                 {
                     foreach (var section in column.Sections)
                     {
-                        context.SectionName = section.Name;
-                        context.SectionLabel = section.Labels.GetLabelInLanguage(app.UILanguageCode, GlobalTestingContext.LanguageCode);
+                        context.FormCellTabAndSectionContext.SectionName = section.Name;
+                        context.FormCellTabAndSectionContext.SectionLabel = section.Labels.GetLabelInLanguage(app.UILanguageCode, GlobalTestingContext.LanguageCode);
                         foreach (var row in section.Rows)
                         {
                             ProcessFormRow(row, metadata, formFields, context);
@@ -74,10 +74,10 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Fields
             if (definition.Header?.Rows != null)
             {
                 context.IsHeader = true;
-                context.TabLabel = "Header";
-                context.TabName = "Header";
-                context.SectionName = null;
-                context.SectionLabel = null;
+                context.FormCellTabAndSectionContext.TabLabel = "Header";
+                context.FormCellTabAndSectionContext.TabName = "Header";
+                context.FormCellTabAndSectionContext.SectionName = null;
+                context.FormCellTabAndSectionContext.SectionLabel = null;
                 foreach (var row in definition.Header.Rows)
                 {
                     ProcessFormRow(row, metadata, formFields, context);
@@ -116,7 +116,13 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Fields
                             formFieldSet = new FormFieldSet();
                             formFields.Add(step.Name, formFieldSet);
                         }
-                        formFieldSet.Add(formField, "Business Process Flow", entity.Stage.StageDisplayName);
+
+                        var formCellTabAndSectionContext = new FormCellTabAndSectionContext
+                        {
+                            TabName = "Business Process Flow",
+                            SectionName = entity.Stage.StageDisplayName
+                        };
+                        formFieldSet.Add(formField, formCellTabAndSectionContext);
                     }
                 }
             }
