@@ -38,7 +38,7 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Fields
                 _formFields.Add(tabNotNull, sectionDicNew);
             }
 
-            if (!sectionDic.TryGetValue(sectionNotNull, out var fieldListNew))
+            if (!sectionDicNew.TryGetValue(sectionNotNull, out var fieldListNew))
             {
                 fieldListNew = new List<FormField>();
                 sectionDicNew.Add(sectionNotNull, fieldListNew);
