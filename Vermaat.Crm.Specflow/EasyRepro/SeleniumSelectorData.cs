@@ -51,7 +51,8 @@ namespace Vermaat.Crm.Specflow.EasyRepro
             { SeleniumSelectorItems.Entity_PCFControl_Container, ".//div[@data-id='[NAME].fieldControl_container']" },
             { SeleniumSelectorItems.Dialog_OK, "//button[@data-id='ok_id']" },
             { SeleniumSelectorItems.Entity_Header, "//button[@data-id='header_overflowButton']" },
-            { SeleniumSelectorItems.Popup_TeachingBubble_CloseButton, "//button[contains(@class, 'ms-TeachingBubble-closebutton')]/span" }
+            { SeleniumSelectorItems.Popup_TeachingBubble_CloseButton, "//button[contains(@class, 'ms-TeachingBubble-closebutton')]/span" },
+            { SeleniumSelectorItems.Copilot_Button, "//*[@role='tablist']//button[contains(@aria-label, 'Copilot')]" }
         };
 
         public By GetXPathSeleniumSelector(SeleniumSelectorItems itemName)
