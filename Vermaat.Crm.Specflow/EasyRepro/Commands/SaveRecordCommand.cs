@@ -62,27 +62,48 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Commands
                 Thread.Sleep(200);
                 var saveStatus = GetSaveStatus(browserInteraction);
 
-                if (saveStatus == SaveStatus.Saved)
-                    saveCompleted = true;
-                else if (saveStatus == SaveStatus.Unsaved)
+                switch (saveStatus)
                 {
-                    var duplicateDetectionResult = SeleniumCommandProcessor.ExecuteCommand(browserInteraction, browserInteraction.SeleniumCommandFactory.CreateCheckForDuplicateDetection(_saveIfDuplicate));
+                    case SaveStatus.Saved:
+                        saveCompleted = true;
+                        break;
+                    case SaveStatus.Unsaved:
+                    {
+                        var duplicateDetectionResult = SeleniumCommandProcessor.ExecuteCommand(browserInteraction, browserInteraction.SeleniumCommandFactory.CreateCheckForDuplicateDetection(_saveIfDuplicate));
 
-                    if(duplicateDetectionResult == DuplicateDetectionResult.DuplicateDetectionRejected)
-                    {
-                        return CommandResult.Fail(false, Constants.ErrorCodes.FORM_SAVE_FAILED, $"Duplicate detected and saving with duplicate is not allowed");
+                        switch (duplicateDetectionResult)
+                        {
+                            case DuplicateDetectionResult.DuplicateDetectionAccepted:
+                                continue;
+                            case DuplicateDetectionResult.DuplicateDetectionRejected:
+                                return CommandResult.Fail(false, Constants.ErrorCodes.FORM_SAVE_FAILED, $"Duplicate detected and saving with duplicate is not allowed");
+                            case DuplicateDetectionResult.NoDuplicateDetection:
+                            default:
+                            {
+                                if (browserInteraction.Driver.TryFindElement(SeleniumFunctions.Selectors.GetXPathSeleniumSelector(SeleniumSelectorItems.Dialog_ErrorDialog), out var errorDialog))
+                                {
+                                    var errorDetails = errorDialog.FindElement(SeleniumFunctions.Selectors.GetXPathSeleniumSelector(SeleniumSelectorItems.Dialog_Subtitle));
+                                    if (!string.IsNullOrEmpty(errorDetails.Text))
+                                        return CommandResult.Fail(false, Constants.ErrorCodes.FORM_SAVE_FAILED, errorDetails.Text);
+                                }
+                                else if (DateTime.Now > unsavedTimeout)
+                                {
+                                    var formNotifications = SeleniumCommandProcessor.ExecuteCommand(browserInteraction, browserInteraction.SeleniumCommandFactory.CreateGetFormNotificationsCommand());
+                                    return CommandResult.Fail(false, Constants.ErrorCodes.FORM_SAVE_FAILED, $"Detected Unsaved changes. Form Notifications: {string.Join(", ", formNotifications)}");
+                                }
+
+                                break;
+                            }
+                        }
+
+                        break;
                     }
-                    else if (browserInteraction.Driver.TryFindElement(SeleniumFunctions.Selectors.GetXPathSeleniumSelector(SeleniumSelectorItems.Dialog_ErrorDialog), out var errorDialog))
-                    {
-                        var errorDetails = errorDialog.FindElement(SeleniumFunctions.Selectors.GetXPathSeleniumSelector(SeleniumSelectorItems.Dialog_Subtitle));
-                        if (!string.IsNullOrEmpty(errorDetails.Text))
-                            return CommandResult.Fail(false, Constants.ErrorCodes.FORM_SAVE_FAILED, errorDetails.Text);
-                    }
-                    else if (DateTime.Now > unsavedTimeout)
-                    {
-                        var formNotifications = SeleniumCommandProcessor.ExecuteCommand(browserInteraction, browserInteraction.SeleniumCommandFactory.CreateGetFormNotificationsCommand());
-                        return CommandResult.Fail(false, Constants.ErrorCodes.FORM_SAVE_FAILED, $"Detected Unsaved changes. Form Notifications: {string.Join(", ", formNotifications)}");
-                    }
+                    case SaveStatus.Saving:
+                        break;
+                    case SaveStatus.Unknown:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
 

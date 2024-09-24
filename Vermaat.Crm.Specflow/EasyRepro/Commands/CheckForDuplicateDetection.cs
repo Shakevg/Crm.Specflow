@@ -2,16 +2,13 @@
 using Microsoft.Dynamics365.UIAutomation.Browser;
 using OpenQA.Selenium;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Vermaat.Crm.Specflow.EasyRepro.Commands
 {
     public class CheckForDuplicateDetection : ISeleniumCommandFunc<DuplicateDetectionResult>
     {
         private readonly bool _saveIfDuplicate;
+        private readonly TimeSpan _duplicateDetectionSearchTimeout = 3.Seconds();
 
         public CheckForDuplicateDetection(bool saveIfDuplicate)
         {
@@ -43,8 +40,8 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Commands
 
         private bool HasDuplicateDetection(BrowserInteraction browserInteraction)
         {
-            return browserInteraction.Driver.HasElement(By.XPath(AppElements.Xpath[AppReference.Entity.DuplicateDetectionWindowMarker]))
-                && browserInteraction.Driver.HasElement(By.XPath(AppElements.Xpath[AppReference.Entity.DuplicateDetectionGridRows]));
+            return browserInteraction.Driver.WaitUntilAvailable(By.XPath(AppElements.Xpath[AppReference.Entity.DuplicateDetectionWindowMarker]), _duplicateDetectionSearchTimeout) != null
+                && browserInteraction.Driver.WaitUntilAvailable(By.XPath(AppElements.Xpath[AppReference.Entity.DuplicateDetectionGridRows]), _duplicateDetectionSearchTimeout) != null;
         }
 
         private void AcceptDuplicateDetection(IWebDriver driver)

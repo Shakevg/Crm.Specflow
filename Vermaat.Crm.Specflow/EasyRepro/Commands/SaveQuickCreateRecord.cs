@@ -1,12 +1,7 @@
-﻿using Microsoft.Dynamics365.UIAutomation.Api.UCI;
-using Microsoft.Dynamics365.UIAutomation.Browser;
-using OpenQA.Selenium;
+﻿using Microsoft.Dynamics365.UIAutomation.Browser;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Vermaat.Crm.Specflow.EasyRepro.Commands
 {
@@ -37,20 +32,29 @@ namespace Vermaat.Crm.Specflow.EasyRepro.Commands
                 Thread.Sleep(200);
 
                 var duplicateDetectionResult = SeleniumCommandProcessor.ExecuteCommand(browserInteraction, browserInteraction.SeleniumCommandFactory.CreateCheckForDuplicateDetection(_saveIfDuplicate));
-                if (duplicateDetectionResult == DuplicateDetectionResult.DuplicateDetectionRejected)
+                switch (duplicateDetectionResult)
                 {
-                    return CommandResult.Fail(false, Constants.ErrorCodes.FORM_SAVE_FAILED, $"Duplicate detected and saving with duplicate is not allowed");
-                }
-                else if (browserInteraction.Driver.HasElement(browserInteraction.Selectors.GetXPathSeleniumSelector(SeleniumSelectorItems.Entity_QuickCreate_Notification_Window)))
-                {
-                    saveCompleted = true;
-                }
-                else
-                {
-                    var formNotifications = SeleniumCommandProcessor.ExecuteCommand(browserInteraction, browserInteraction.SeleniumCommandFactory.CreateGetFormNotificationsCommand());
-                    if (formNotifications.Any())
+                    case DuplicateDetectionResult.DuplicateDetectionAccepted:
+                        continue;
+                    case DuplicateDetectionResult.DuplicateDetectionRejected:
+                        return CommandResult.Fail(false, Constants.ErrorCodes.FORM_SAVE_FAILED, $"Duplicate detected and saving with duplicate is not allowed");
+                    case DuplicateDetectionResult.NoDuplicateDetection:
+                    default:
                     {
-                        throw new TestExecutionException(Constants.ErrorCodes.FORM_SAVE_FAILED, $"Detected Unsaved changes. Form Notifications: {string.Join(", ", formNotifications)}");
+                        if (browserInteraction.Driver.HasElement(browserInteraction.Selectors.GetXPathSeleniumSelector(SeleniumSelectorItems.Entity_QuickCreate_Notification_Window)))
+                        {
+                            saveCompleted = true;
+                        }
+                        else
+                        {
+                            var formNotifications = SeleniumCommandProcessor.ExecuteCommand(browserInteraction, browserInteraction.SeleniumCommandFactory.CreateGetFormNotificationsCommand());
+                            if (formNotifications.Any())
+                            {
+                                throw new TestExecutionException(Constants.ErrorCodes.FORM_SAVE_FAILED, $"Detected Unsaved changes. Form Notifications: {string.Join(", ", formNotifications)}");
+                            }
+                        }
+
+                        break;
                     }
                 }
             }
