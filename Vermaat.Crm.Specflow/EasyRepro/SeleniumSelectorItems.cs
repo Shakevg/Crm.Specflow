@@ -67,6 +67,8 @@
 
         FlyoutRoot,
 
-        Popup_TeachingBubble_CloseButton
+        Popup_TeachingBubble_CloseButton,
+
+        Copilot_Button
     }
 }
